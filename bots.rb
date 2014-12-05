@@ -3,14 +3,14 @@
 require 'twitter_ebooks'
 include Ebooks
 
-CONSUMER_KEY = ""
-CONSUMER_SECRET = ""
-OATH_TOKEN = "" # oauth token for ebooks account
-OAUTH_TOKEN_SECRET = "" # oauth secret for ebooks account
+CONSUMER_KEY = ENV['CONSUMER_KEY']
+CONSUMER_SECRET = ENV['CONSUMER_SECRET']
+OAUTH_TOKEN = ENV['OAUTH_TOKEN']
+OAUTH_TOKEN_SECRET = ENV['OAUTH_TOKEN_SECRET']
 
-ROBOT_ID = "ebooks" # Avoid infinite reply chains
-TWITTER_USERNAME = "ebooks_username" # Ebooks account username
-TEXT_MODEL_NAME = "username" # This should be the name of the text model
+ROBOT_ID = "ontology_ebooks" # Avoid infinite reply chains
+TWITTER_USERNAME = "ontologybooks" # Ebooks account username
+TEXT_MODEL_NAME = "fractalontology" # This should be the name of the text model
 
 DELAY = 2..30 # Simulated human reply delay range in seconds
 BLACKLIST = ['insomnius', 'upulie'] # Grumpy users to avoid interaction with
@@ -29,6 +29,7 @@ class GenBot
 
     bot.on_startup do
       @model = Model.load("model/#{modelname}.model")
+      bot.tweet @model.make_statement(140) 
       @top100 = @model.keywords.top(100).map(&:to_s).map(&:downcase)
       @top50 = @model.keywords.top(20).map(&:to_s).map(&:downcase)
     end
@@ -97,8 +98,8 @@ class GenBot
       end
     end
 
-    # Schedule a main tweet for every day at midnight
-    bot.scheduler.cron '0 0 * * *' do
+    # schedule a main tweet every night at midnight
+    bot.scheduler.cron '0 * * * * *' do
       bot.tweet @model.make_statement
       $have_talked = {}
     end
@@ -131,7 +132,7 @@ def make_bot(bot, modelname)
 end
 
 Ebooks::Bot.new(TWITTER_USERNAME) do |bot|
-  bot.oauth_token = OATH_TOKEN
+  bot.oauth_token = OAUTH_TOKEN
   bot.oauth_token_secret = OAUTH_TOKEN_SECRET
 
   make_bot(bot, TEXT_MODEL_NAME)
