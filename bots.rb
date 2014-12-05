@@ -3,9 +3,15 @@
 require 'twitter_ebooks'
 include Ebooks
 
-CONSUMER_KEY = ENV['CONSUMER_KEY']
-CONSUMER_SECRET = ENV['CONSUMER_SECRET']
-OAUTH_TOKEN = ENV['OAUTH_TOKEN']
+config_var_names = %w[ CONSUMER_KEY CONSUMER_SECRET OAUTH_TOKEN OAUTH_TOKEN_SECRET ]
+unless config_var_names.all? { |required| !ENV[required].nil? && ENV[required].length > 0 }
+  missing_vars = config_var_names.select { |req| ENV[req].nil? || !ENV[req].length > 0 }
+  raise "Must provide all configuration variables (you may be missing #{missing_vars.join(', ')})" 
+end
+
+CONSUMER_KEY       = ENV['CONSUMER_KEY']
+CONSUMER_SECRET    = ENV['CONSUMER_SECRET']
+OAUTH_TOKEN        = ENV['OAUTH_TOKEN']
 OAUTH_TOKEN_SECRET = ENV['OAUTH_TOKEN_SECRET']
 
 ROBOT_ID = "ontology_ebooks" # Avoid infinite reply chains
